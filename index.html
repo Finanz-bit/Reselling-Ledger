@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Piece Ledger V3 | Reselling Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" onload="window.dispatchEvent(new Event('chartjs-ready'))"></script>
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <div class="layout-shell">
+      <aside class="side-nav glass-card" aria-label="Inhaltsverzeichnis">
+        <p class="eyebrow">Inhalt</p>
+        <nav>
+          <a class="active" href="#dashboard" data-nav-link="dashboard">Dashboard</a>
+          <a href="#produktverwaltung" data-nav-link="produktverwaltung">Produktverwaltung</a>
+          <a href="#pieces" data-nav-link="pieces">Pieces</a>
+          <a href="#bestellungen" data-nav-link="bestellungen">Bestellungen</a>
+          <a href="#diagramme" data-nav-link="diagramme">Graphen</a>
+        </nav>
+      </aside>
+
+      <main class="app-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Lokales Reselling Dashboard</p>
+            <h1>Reselling Ledger</h1>
+          </div>
+          <div class="top-actions" aria-label="Import und Export">
+            <button class="btn ghost" id="exportJsonBtn" type="button">JSON exportieren</button>
+            <label class="btn primary file-btn" for="importJsonInput">
+              JSON importieren
+              <input id="importJsonInput" type="file" accept="application/json,.json">
+            </label>
+          </div>
+        </header>
+
+        <section class="page-section" id="dashboard" data-section="dashboard" aria-label="Dashboard Kennzahlen">
+          <div class="overview-grid">
+            <article class="overview-card glass-card accent-red">
+              <div>
+                <p class="eyebrow">Gesamtübersicht</p>
+                <h2>Gesamtausgaben</h2>
+              </div>
+              <p class="overview-value negative" id="totalExpenses">0,00 EUR</p>
+              <div class="overview-meta">
+                <span>Pieces</span>
+                <strong id="totalPieceExpenses">0,00 EUR</strong>
+              </div>
+              <div class="overview-meta">
+                <span>Offene Bestellungen</span>
+                <strong id="totalOrderExpenses">0,00 EUR</strong>
+              </div>
+            </article>
+
+            <article class="overview-card glass-card accent-green">
+              <div>
+                <p class="eyebrow">Gesamtübersicht</p>
+                <h2>Gesamteinnahmen</h2>
+              </div>
+              <p class="overview-value positive" id="totalIncome">0,00 EUR</p>
+              <div class="overview-meta">
+                <span>Offene Verkäufe</span>
+                <strong id="totalSaleIncome">0,00 EUR</strong>
+              </div>
+              <div class="overview-meta">
+                <span>Ausgezahlt</span>
+                <strong id="totalPayoutIncome">0,00 EUR</strong>
+              </div>
+            </article>
+
+            <article class="overview-card glass-card accent-blue">
+              <div>
+                <p class="eyebrow">Schnellblick</p>
+                <h2>Gewinn</h2>
+              </div>
+              <p class="overview-value" id="totalBalance">0,00 EUR</p>
+              <div class="overview-meta">
+                <span>Aktive Pieces</span>
+                <strong id="totalActivePieces">0</strong>
+              </div>
+              <div class="overview-meta">
+                <span>Laufende Bestellungen</span>
+                <strong id="totalOpenOrders">0</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="dashboard-grid" aria-label="Dashboard Detailkennzahlen">
+          <article class="stat-card glass-card accent-blue">
+            <div class="stat-head">
+              <div>
+                <p class="eyebrow">Bereich 1</p>
+                <h2>Hypothese</h2>
+              </div>
+              <span class="status-chip status-purchased">Upload</span>
+            </div>
+            <p class="mega-value" id="hypothesisProfit">0,00 EUR</p>
+            <div class="progress-track" aria-hidden="true">
+              <span id="hypothesisProgress"></span>
+            </div>
+            <div class="metric-grid">
+              <div><span>Ausgaben</span><strong id="hypothesisSpend">0,00 EUR</strong></div>
+              <div><span>Erwarteter Umsatz</span><strong id="hypothesisRevenue">0,00 EUR</strong></div>
+              <div><span>Durchschnitt Gewinn</span><strong id="hypothesisAvg">0,00 EUR</strong></div>
+              <div><span>Aktive Pieces</span><strong id="hypothesisCount">0</strong></div>
+            </div>
+          </article>
+
+          <article class="stat-card glass-card accent-orange">
+            <div class="stat-head">
+              <div>
+                <p class="eyebrow">Bereich 2</p>
+                <h2>Verkauft</h2>
+              </div>
+              <span class="status-chip status-sold">Warten</span>
+            </div>
+            <p class="mega-value" id="soldProfit">0,00 EUR</p>
+            <div class="progress-track" aria-hidden="true">
+              <span id="soldProgress"></span>
+            </div>
+            <div class="metric-grid">
+              <div><span>Ausgaben</span><strong id="soldSpend">0,00 EUR</strong></div>
+              <div><span>Tatsächlicher Umsatz</span><strong id="soldRevenue">0,00 EUR</strong></div>
+              <div><span>Gewinn pro Piece</span><strong id="soldAvg">0,00 EUR</strong></div>
+              <div><span>Verkaufte Pieces</span><strong id="soldCount">0</strong></div>
+            </div>
+          </article>
+
+          <article class="stat-card glass-card accent-green">
+            <div class="stat-head">
+              <div>
+                <p class="eyebrow">Bereich 3</p>
+                <h2>Abgeschlossen</h2>
+              </div>
+              <span class="status-chip status-completed">Abgeschlossen</span>
+            </div>
+            <p class="mega-value" id="realizedProfit">0,00 EUR</p>
+            <div class="progress-track" aria-hidden="true">
+              <span id="realizedProgress"></span>
+            </div>
+            <div class="metric-grid">
+              <div><span>Ausgaben</span><strong id="realizedSpend">0,00 EUR</strong></div>
+              <div><span>Erhaltenes Geld</span><strong id="realizedRevenue">0,00 EUR</strong></div>
+              <div><span>Durchschnitt Gewinn</span><strong id="realizedAvg">0,00 EUR</strong></div>
+              <div><span>ROI</span><strong id="realizedRoi">0,0%</strong></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="glass-card form-panel page-section" id="produktverwaltung" data-section="produktverwaltung">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Produktverwaltung</p>
+                <h2 id="formTitle">Piece anlegen</h2>
+              </div>
+              <button class="btn subtle" id="resetFormBtn" type="button">Zurücksetzen</button>
+            </div>
+
+            <form id="pieceForm" novalidate>
+              <input type="hidden" id="pieceId">
+
+              <label>
+                <span>Produktname</span>
+                <input id="nameInput" type="text" autocomplete="off" required>
+              </label>
+
+              <label>
+                <span>Beschreibung / Notiz</span>
+                <textarea id="descriptionInput" rows="4" required></textarea>
+              </label>
+
+              <div class="field-row">
+                <label>
+                  <span>Einkaufsdatum</span>
+                  <input id="purchaseDateInput" type="date">
+                </label>
+                <label>
+                  <span>Status</span>
+                  <select id="statusInput" required>
+                    <option value="purchased">Upload</option>
+                    <option value="sold">Verkauft</option>
+                    <option value="completed">Abgeschl.</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="field-row">
+                <label>
+                  <span>Einkaufspreis</span>
+                  <input id="purchasePriceInput" type="number" min="0" step="0.01" inputmode="decimal" required>
+                </label>
+                <label>
+                  <span>Hypothese Verkaufspreis</span>
+                  <input id="expectedSalePriceInput" type="number" min="0" step="0.01" inputmode="decimal" required>
+                </label>
+              </div>
+
+              <div class="field-row">
+                <label>
+                  <span>Tatsächlicher Verkaufspreis</span>
+                  <input id="actualSalePriceInput" type="number" min="0" step="0.01" inputmode="decimal">
+                </label>
+                <label>
+                  <span>Tatsächlich ausgezahlt</span>
+                  <input id="payoutAmountInput" type="number" min="0" step="0.01" inputmode="decimal">
+                </label>
+              </div>
+
+              <p class="form-feedback" id="formFeedback" role="alert" aria-live="polite"></p>
+
+              <div class="form-actions">
+                <button class="btn primary" type="submit">Piece speichern</button>
+              </div>
+            </form>
+          </article>
+
+          <section class="inventory-panel page-section" id="pieces" data-section="pieces">
+            <div class="glass-card list-toolbar">
+              <div class="section-title">
+                <div>
+                  <p class="eyebrow">Bestand</p>
+                  <h2>Pieces</h2>
+                </div>
+                <span class="result-count" id="resultCount">0 Pieces</span>
+              </div>
+
+              <div class="toolbar-grid">
+                <label class="search-box">
+                  <span>Suche</span>
+                  <input id="searchInput" type="search" placeholder="Produkt oder Notiz suchen">
+                </label>
+
+                <div class="segmented" aria-label="Status filtern">
+                  <button class="active" type="button" data-filter="all">Alle</button>
+                  <button type="button" data-filter="purchased">Upload</button>
+                  <button type="button" data-filter="sold">Verkauft</button>
+                  <button type="button" data-filter="completed">Abgeschl.</button>
+                </div>
+
+                <label>
+                  <span>Sortierung</span>
+                  <select id="sortInput">
+                    <option value="newest">Neueste zuerst</option>
+                    <option value="oldest">Älteste zuerst</option>
+                    <option value="profitDesc">Höchster Gewinn</option>
+                    <option value="profitAsc">Niedrigster Gewinn</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="piece-list" id="pieceList" aria-live="polite"></div>
+            <button class="btn ghost expand-btn" id="pieceExpandBtn" type="button" hidden>Alle Pieces anzeigen</button>
+          </section>
+        </section>
+
+        <section class="orders-section glass-card page-section" id="bestellungen" data-section="bestellungen">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Laufende Einkäufe</p>
+              <h2>Bestellungen</h2>
+            </div>
+            <span class="result-count" id="orderCount">0 Bestellungen</span>
+          </div>
+
+          <form class="order-form" id="orderForm" novalidate>
+            <label>
+              <span>Produkt / Bestellung</span>
+              <input id="orderNameInput" type="text" autocomplete="off" required>
+            </label>
+            <label>
+              <span>Quelle</span>
+              <input id="orderSourceInput" type="text" placeholder="Vinted, Flohmarkt, eBay ...">
+            </label>
+            <label>
+              <span>Bestelldatum</span>
+              <input id="orderDateInput" type="date">
+            </label>
+            <label>
+              <span>Preis</span>
+              <input id="orderPriceInput" type="number" min="0" step="0.01" inputmode="decimal">
+            </label>
+            <label class="wide-field">
+              <span>Notiz</span>
+              <input id="orderNoteInput" type="text" autocomplete="off">
+            </label>
+            <button class="btn primary" type="submit">Bestellung speichern</button>
+          </form>
+
+          <p class="form-feedback" id="orderFeedback" role="alert" aria-live="polite"></p>
+          <div class="order-list" id="orderList" aria-live="polite"></div>
+        </section>
+
+        <section class="charts-grid page-section" id="diagramme" data-section="diagramme" aria-label="Graphen">
+          <article class="glass-card chart-card">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Graph 1</p>
+                <h2>Gewinnentwicklung</h2>
+              </div>
+            </div>
+            <canvas id="profitChart"></canvas>
+          </article>
+
+          <article class="glass-card chart-card">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Graph 2</p>
+                <h2>Umsatzentwicklung</h2>
+              </div>
+            </div>
+            <canvas id="revenueChart"></canvas>
+          </article>
+
+          <article class="glass-card chart-card">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Graph 3</p>
+                <h2>Statusverteilung</h2>
+              </div>
+            </div>
+            <canvas id="statusChart"></canvas>
+          </article>
+
+          <article class="glass-card chart-card">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">Graph 4</p>
+                <h2>ROI-Entwicklung</h2>
+              </div>
+            </div>
+            <canvas id="roiChart"></canvas>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
