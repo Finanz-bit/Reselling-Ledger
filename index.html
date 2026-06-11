@@ -38,17 +38,17 @@
                 </div>
                 <span class="sync-pill local" id="syncStatus">Lokal</span>
               </div>
-              <div class="auth-form" id="authForm">
+              <form class="auth-form" id="authForm" novalidate>
                 <input id="authEmailInput" type="email" autocomplete="email" placeholder="E-Mail">
                 <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Passwort">
                 <div class="auth-actions">
-                  <button class="btn primary" id="authLoginBtn" type="button">Einloggen</button>
-                  <button class="btn ghost" id="authSignupBtn" type="button">Account erstellen</button>
+                  <button class="btn primary" id="authLoginBtn" type="submit" data-auth-action="login">Einloggen</button>
+                  <button class="btn ghost" id="authSignupBtn" type="button" data-auth-action="signup">Account erstellen</button>
                 </div>
-              </div>
+              </form>
               <div class="auth-actions signed-in-actions" id="signedInActions" hidden>
-                <button class="btn ghost" id="syncNowBtn" type="button">Jetzt synchronisieren</button>
-                <button class="btn subtle" id="authLogoutBtn" type="button">Abmelden</button>
+                <button class="btn ghost" id="syncNowBtn" type="button" data-auth-action="sync">Jetzt synchronisieren</button>
+                <button class="btn subtle" id="authLogoutBtn" type="button" data-auth-action="logout">Abmelden</button>
               </div>
             </section>
             <div class="top-actions" aria-label="Import und Export">
