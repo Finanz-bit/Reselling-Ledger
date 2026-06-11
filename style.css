@@ -64,6 +64,7 @@ textarea {
 
 button {
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .layout-shell {
@@ -126,6 +127,8 @@ button {
 }
 
 .topbar {
+  position: relative;
+  z-index: 20;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -177,6 +180,8 @@ h2 {
 }
 
 .auth-panel {
+  position: relative;
+  z-index: 2;
   display: grid;
   gap: 10px;
   padding: 12px;
