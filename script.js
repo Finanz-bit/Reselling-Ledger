@@ -169,14 +169,10 @@ function bindEvents() {
   els.orderForm.addEventListener("submit", handleOrderSubmit);
   els.exportJsonBtn.addEventListener("click", exportJson);
   els.importJsonInput.addEventListener("change", importJson);
-  els.authLoginBtn.addEventListener("click", handleLogin);
-  els.authSignupBtn.addEventListener("click", handleSignup);
-  els.authLogoutBtn.addEventListener("click", handleLogout);
-  els.syncNowBtn.addEventListener("click", syncFromCloud);
-  [els.authEmail, els.authPassword].forEach((input) => {
-    input.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") handleLogin();
-    });
+  els.authPanel.addEventListener("click", handleAuthPanelClick);
+  els.authForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    runAuthAction("login");
   });
   els.filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -197,6 +193,38 @@ function bindEvents() {
       link.blur();
     });
   });
+}
+
+function handleAuthPanelClick(event) {
+  const button = event.target.closest("[data-auth-action]");
+  if (!button || !els.authPanel.contains(button) || button.disabled) return;
+  const action = button.dataset.authAction;
+
+  if (action !== "login") {
+    event.preventDefault();
+    runAuthAction(action);
+  }
+}
+
+function runAuthAction(action) {
+  if (action === "login") {
+    handleLogin();
+    return;
+  }
+
+  if (action === "signup") {
+    handleSignup();
+    return;
+  }
+
+  if (action === "logout") {
+    handleLogout();
+    return;
+  }
+
+  if (action === "sync") {
+    syncFromCloud();
+  }
 }
 
 function initCloudSync() {
@@ -272,11 +300,16 @@ async function handleLogin() {
   setAuthBusy(true);
   setSyncStatus("Login läuft...", "syncing");
 
-  const { error } = await syncState.client.auth.signInWithPassword(credentials);
+  try {
+    const { error } = await syncState.client.auth.signInWithPassword(credentials);
 
-  setAuthBusy(false);
-  if (error) {
-    setSyncStatus(error.message, "error");
+    if (error) {
+      setSyncStatus(error.message, "error");
+    }
+  } catch (error) {
+    setSyncStatus(error.message || "Login fehlgeschlagen", "error");
+  } finally {
+    setAuthBusy(false);
   }
 }
 
@@ -288,32 +321,59 @@ async function handleSignup() {
   setAuthBusy(true);
   setSyncStatus("Account wird erstellt...", "syncing");
 
-  const { data, error } = await syncState.client.auth.signUp(credentials);
+  try {
+    const { data, error } = await syncState.client.auth.signUp(credentials);
 
-  setAuthBusy(false);
-  if (error) {
-    setSyncStatus(error.message, "error");
-    return;
-  }
+    if (error) {
+      setSyncStatus(error.message, "error");
+      return;
+    }
 
-  if (data.session?.user) {
-    await connectCloudUser(data.session.user);
-  } else {
-    setSyncStatus("Account erstellt. Bitte E-Mail bestätigen.", "local");
+    if (data.session?.user) {
+      await connectCloudUser(data.session.user);
+    } else {
+      setSyncStatus("Account erstellt. Bitte E-Mail bestätigen.", "local");
+    }
+  } catch (error) {
+    setSyncStatus(error.message || "Account-Erstellung fehlgeschlagen", "error");
+  } finally {
+    setAuthBusy(false);
   }
 }
 
 async function handleLogout() {
-  if (!syncState.client) return;
+  if (!syncState.client) {
+    setSyncStatus("Cloud-Verbindung nicht bereit", "error");
+    return;
+  }
+
   setAuthBusy(true);
-  await syncState.client.auth.signOut();
-  setAuthBusy(false);
+
+  try {
+    const { error } = await syncState.client.auth.signOut();
+    if (error) throw error;
+  } catch (error) {
+    setSyncStatus(error.message || "Abmelden fehlgeschlagen", "error");
+  } finally {
+    setAuthBusy(false);
+  }
 }
 
 async function syncFromCloud() {
-  if (!syncState.client || !syncState.user || syncState.syncing) return;
+  if (!syncState.client) {
+    setSyncStatus("Cloud-Verbindung nicht bereit", "error");
+    return;
+  }
+
+  if (!syncState.user) {
+    setSyncStatus("Bitte zuerst einloggen", "error");
+    return;
+  }
+
+  if (syncState.syncing) return;
 
   syncState.syncing = true;
+  setAuthBusy(true);
   setSyncStatus("Synchronisiere...", "syncing");
 
   try {
@@ -365,6 +425,7 @@ async function syncFromCloud() {
     setSyncStatus(error.message || "Sync fehlgeschlagen", "error");
   } finally {
     syncState.syncing = false;
+    setAuthBusy(false);
   }
 }
 
